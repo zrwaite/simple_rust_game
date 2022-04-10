@@ -1,40 +1,34 @@
 use sdl2::rect::{Point, Rect};
-#[path="./controller.rs"] mod controller;
+#[path="./controller.rs"] pub mod controller;
+#[path="./sprite.rs"] pub mod sprite;
+use sprite::{ Vector2, Sprite, Direction};
 use controller::Controller;
 // use sdl2::render::{Texture};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Direction {
-    Up,
-    Down,
-    Left,
-    Right,
-}
+
 
 #[derive(Debug)]
 pub struct Xy {
-	x: i32, y: i32
+	
 }
 
 #[derive(Debug)]
 pub struct Player {
 	pub position: Point,
-	pub sprite: Rect,
-	pub start_sprite: Rect,
-	pub speed: Xy,
+	pub sprite: Sprite,
+	pub speed: Vector2,
 	pub max_speed: i32,
 	pub controller: Controller,
 	pub direction: Direction
 }
 
 impl Player {
-	pub fn new(position: Point, sprite: Rect) -> Player{
+	pub fn new(position: Point, sprite: Sprite) -> Player{
 		Player{
-			position: position,
-			sprite: sprite,
-			start_sprite: sprite,
+			position,
+			sprite,
 			max_speed: 3,
-			speed: Xy{x:0,y:0},
+			speed: Vector2::new(0,0),
 			controller: Controller::new(),
 			direction: Direction::Down
 		}
@@ -61,7 +55,7 @@ impl Player {
 		self.position = self.position.offset(self.speed.x, self.speed.y);
 	}
 	fn render(&mut self) {
-		self.sprite.set_y(self.start_sprite.y() + self.get_render_row()*self.sprite.height() as i32);
+		self.sprite.region.set_y(self.sprite.start_region.y() + self.get_render_row()*self.sprite.region.height() as i32);
 	}
 	fn get_render_row(&self) -> i32 {
 		use self::Direction::*;

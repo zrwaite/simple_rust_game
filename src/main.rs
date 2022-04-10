@@ -1,5 +1,7 @@
-// extern crate sdl2;
 
+// extern crate sdl2;
+// https://sunjay.dev/learn-game-dev/adding-ecs.html
+// https://www.youtube.com/watch?v=oHYs-UqS458&t=172s
 use sdl2::pixels::Color;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
@@ -9,6 +11,7 @@ use sdl2::rect::{Point, Rect};
 use std::time::Duration;
 #[path = "player.rs"] mod player;
 use player::Player;
+use player::sprite::{Sprite};
 
 
 fn render(
@@ -21,9 +24,9 @@ fn render(
     canvas.clear();
     let (width, height) = canvas.output_size()?;
     let screen_position = player.position + Point::new(width as i32/2, height as i32 / 2);
-    let screen_rect = Rect::from_center(screen_position, player.sprite.width(), player.sprite.height());
+    let screen_rect = Rect::from_center(screen_position, player.sprite.region.width(), player.sprite.region.height());
 
-    canvas.copy(texture, player.sprite, screen_rect)?;
+    canvas.copy(texture, player.sprite.region, screen_rect)?;
 
     canvas.present();
     Ok(())
@@ -46,7 +49,7 @@ fn main() -> Result<(), String> {
     let texture_creator = canvas.texture_creator();
     let texture = texture_creator.load_texture("assets/bardo.png")?;
 
-    let mut player = Player::new(Point::new(0, 0), Rect::new(0, 0, 26, 36));
+    let mut player = Player::new(Point::new(0, 0), Sprite::new(0, Rect::new(0, 0, 26, 36)));
 
     let mut event_pump = sdl_context.event_pump()?;
     let mut i = 0;
