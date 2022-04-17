@@ -1,8 +1,9 @@
-use sdl2::rect::{Point, Rect};
-#[path="./controller.rs"] pub mod controller;
-#[path="./sprite.rs"] pub mod sprite;
+use crate::controller;
+use crate::sprite;
 use sprite::{ Vector2, Sprite, Direction};
 use controller::Controller;
+use sdl2::rect::{Point, Rect};
+use sdl2::render::{WindowCanvas, Texture};
 // use sdl2::render::{Texture};
 
 
@@ -35,7 +36,15 @@ impl Player {
 	}
 	pub fn update(&mut self) {
 		self.controls();
-		self.render();
+		self.sprite.region.set_y(self.sprite.start_region.y() + self.get_render_row()*self.sprite.region.height() as i32);
+	}
+	pub fn render(&self, canvas: &mut WindowCanvas, textures: &[Texture])-> Result<(), String> {
+		let (width, height) = canvas.output_size()?;
+		let screen_position = self.position + Point::new(width as i32/2, height as i32 / 2);
+		let screen_rect = Rect::from_center(screen_position, self.sprite.region.width(), self.sprite.region.height());
+	
+		canvas.copy(&textures[self.sprite.spritesheet], self.sprite.region, screen_rect)?;
+		Ok(())
 	}
 	fn controls (&mut self) {
 		if self.controller.left {
@@ -53,9 +62,6 @@ impl Player {
 			self.direction = Direction::Down;
 		} else {self.speed.y = 0;}
 		self.position = self.position.offset(self.speed.x, self.speed.y);
-	}
-	fn render(&mut self) {
-		self.sprite.region.set_y(self.sprite.start_region.y() + self.get_render_row()*self.sprite.region.height() as i32);
 	}
 	fn get_render_row(&self) -> i32 {
 		use self::Direction::*;

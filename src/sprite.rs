@@ -1,6 +1,7 @@
 use specs::prelude::*;
 use specs_derive::Component;
-use sdl2::rect::{Point, Rect};
+use sdl2::rect::{Rect};
+
 
 #[derive(Component, Debug)]
 #[storage(VecStorage)]

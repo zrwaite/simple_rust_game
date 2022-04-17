@@ -9,25 +9,22 @@ use sdl2::render::{WindowCanvas, Texture};
 use sdl2::image::{self, LoadTexture, InitFlag};
 use sdl2::rect::{Point, Rect};
 use std::time::Duration;
-#[path = "player.rs"] mod player;
+mod player;
+mod controller;
+mod sprite;
 use player::Player;
-use player::sprite::{Sprite};
+use sprite::{Sprite};
 
 
 fn render(
     canvas: &mut WindowCanvas, 
     color: Color, 
-    texture: &Texture,
+    textures: &[Texture],
     player: &Player,
 ) -> Result<(),String> {
     canvas.set_draw_color(color);
     canvas.clear();
-    let (width, height) = canvas.output_size()?;
-    let screen_position = player.position + Point::new(width as i32/2, height as i32 / 2);
-    let screen_rect = Rect::from_center(screen_position, player.sprite.region.width(), player.sprite.region.height());
-
-    canvas.copy(texture, player.sprite.region, screen_rect)?;
-
+    player.render(canvas, textures)?;
     canvas.present();
     Ok(())
 }   
@@ -47,7 +44,7 @@ fn main() -> Result<(), String> {
         .expect("could not make a canvas");
 
     let texture_creator = canvas.texture_creator();
-    let texture = texture_creator.load_texture("assets/bardo.png")?;
+    let textures = [texture_creator.load_texture("assets/bardo.png")?];
 
     let mut player = Player::new(Point::new(0, 0), Sprite::new(0, Rect::new(0, 0, 26, 36)));
 
@@ -93,8 +90,8 @@ fn main() -> Result<(), String> {
         player.update();
 
         //Render
-        render(&mut canvas, Color::RGB(i, 64, 255 - i), &texture, &player)?;
-        ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
+        render(&mut canvas, Color::RGB(i, 64, 255 - i), &textures, &player)?;
+        std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
     }
     Ok(())
 }

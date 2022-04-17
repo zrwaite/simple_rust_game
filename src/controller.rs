@@ -1,6 +1,3 @@
-// use sdl2::rect::{Point, Rect};
-// use sdl2::render::{Texture};
-
 #[derive(Debug)]
 pub struct Controller {
 	pub left: bool,
