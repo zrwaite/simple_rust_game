@@ -20,7 +20,8 @@ pub struct Player {
 	pub speed: Vector2,
 	pub max_speed: i32,
 	pub controller: Controller,
-	pub direction: Direction
+	pub direction: Direction,
+	moving: bool
 }
 
 impl Player {
@@ -31,18 +32,23 @@ impl Player {
 			max_speed: 3,
 			speed: Vector2::new(0,0),
 			controller: Controller::new(),
-			direction: Direction::Down
+			direction: Direction::Down,
+			moving: true
 		}
 	}
 	pub fn update(&mut self) {
 		self.controls();
+		self.animation();
+	}
+	pub fn animation(&mut self) {
 		self.sprite.region.set_y(self.sprite.start_region.y() + self.get_render_row()*self.sprite.region.height() as i32);
+		self.sprite.region.set_x(self.sprite.start_region.x() + self.get_render_column()*self.sprite.region.width() as i32);
+		self.sprite.animation(self.moving);
 	}
 	pub fn render(&self, canvas: &mut WindowCanvas, textures: &[Texture])-> Result<(), String> {
 		let (width, height) = canvas.output_size()?;
 		let screen_position = self.position + Point::new(width as i32/2, height as i32 / 2);
-		let screen_rect = Rect::from_center(screen_position, self.sprite.region.width(), self.sprite.region.height());
-	
+		let screen_rect = Rect::from_center(screen_position, self.sprite.size.x as u32, self.sprite.size.y as u32);
 		canvas.copy(&textures[self.sprite.spritesheet], self.sprite.region, screen_rect)?;
 		Ok(())
 	}
@@ -62,6 +68,7 @@ impl Player {
 			self.direction = Direction::Down;
 		} else {self.speed.y = 0;}
 		self.position = self.position.offset(self.speed.x, self.speed.y);
+		self.moving = self.controller.left || self.controller.right || self.controller.up || self.controller.down;
 	}
 	fn get_render_row(&self) -> i32 {
 		use self::Direction::*;
@@ -71,5 +78,10 @@ impl Player {
 			Right => 2,
 			Up => 3,
 		}
+	}
+	fn get_render_column(&self) -> i32 {
+		if self.sprite.animation_frame==0 || self.sprite.animation_frame==2 {1} 
+		else if self.sprite.animation_frame==1 {2} 
+		else {0}
 	}
 }	

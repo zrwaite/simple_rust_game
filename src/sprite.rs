@@ -20,14 +20,34 @@ impl Vector2 {
 pub struct Sprite {
     pub spritesheet: usize,
    	pub start_region: Rect,
-	pub region: Rect
+	pub size: Vector2,
+	pub region: Rect,
+	pub animation_frame: i32,
+	pub animation_timer: i32,
+	pub animation_delay: i32
 }
 impl Sprite {
 	pub fn new(spritesheet: usize, region: Rect) -> Sprite{
 		Sprite{
 			spritesheet,
 			region,
+			size: Vector2::new(60,80),
 			start_region: region,
+			animation_frame: 0,
+			animation_delay: 10,
+			animation_timer: 0
+		}
+	}
+	pub fn animation(&mut self, moving: bool) {
+		if moving {
+			self.animation_timer+=1;
+			self.animation_timer%=self.animation_delay;
+			if self.animation_timer==0 {
+				self.animation_frame+=1;
+				self.animation_frame%=4;
+			}
+		} else {
+			self.animation_frame = 0;
 		}
 	}
 }
