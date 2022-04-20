@@ -1,14 +1,18 @@
+
+
 use specs::prelude::*;
 
 use crate::components::*;
 
-struct Physics;
+pub struct Physics;
 
 impl<'a> System<'a> for Physics {
     type SystemData = (WriteStorage<'a, Position>, ReadStorage<'a, Velocity>);
 
     fn run(&mut self, mut data: Self::SystemData) {
         use self::Direction::*;
+        //TODO: This code can be made nicer and more idiomatic using more pattern matching.
+        // Look up "rust irrefutable patterns" and use them here.
         for (pos, vel) in (&mut data.0, &data.1).join() {
             match vel.direction {
                 Left => {
@@ -27,3 +31,4 @@ impl<'a> System<'a> for Physics {
         }
     }
 }
+
