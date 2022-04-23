@@ -3,6 +3,7 @@ mod physics;
 mod animator;
 mod keyboard;
 mod renderer;
+mod character;
 
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
@@ -16,55 +17,11 @@ use specs::prelude::*;
 use std::time::Duration;
 
 use crate::components::*;
-
-pub enum MovementCommand {
-    Stop,
-    Move(Direction),
-}
-
-/// Returns the row of the spritesheet corresponding to the given direction
-fn direction_spritesheet_row(direction: Direction) -> i32 {
-    use self::Direction::*;
-    match direction {
-        Up => 3,
-        Down => 0,
-        Left => 1,
-        Right => 2,
-    }
-}
-
-/// Create animation frames for the standard character spritesheet
-fn character_animation_frames(spritesheet: usize, top_left_frame: Rect, direction: Direction) -> Vec<Sprite> {
-    // All assumptions about the spritesheets are now encapsulated in this function instead of in
-    // the design of our entire system. We can always replace this function, but replacing the
-    // entire system is harder.
-
-    let (frame_width, frame_height) = top_left_frame.size();
-    let y_offset = top_left_frame.y() + frame_height as i32 * direction_spritesheet_row(direction);
-
-    let mut frames = Vec::new();
-    for i in 0..3 {
-        frames.push(Sprite {
-            spritesheet,
-            region: Rect::new(
-                top_left_frame.x() + frame_width as i32 * i,
-                y_offset,
-                frame_width,
-                frame_height,
-            ),
-            direction: Direction::Down
-        })
-    }
-
-    frames
-}
+use crate::character::Character;
 
 fn main() -> Result<(), String> {
     let sdl_context = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
-    // Leading "_" tells Rust that this is an unused variable that we don't care about. It has to
-    // stay unused because if we don't have any variable at all then Rust will treat it as a
-    // temporary value and drop it right away!
     let _image_context = image::init(InitFlag::PNG | InitFlag::JPG)?;
 
     let window = video_subsystem.window("game tutorial", 800, 600)
@@ -88,31 +45,25 @@ fn main() -> Result<(), String> {
 
     // Initialize resource
     let mut presses = KeyTracker::new();
-    world.add_resource(presses);
-    // let movement_command: Option<MovementCommand> = None;
-    // world.add_resource(movement_command);
+    world.insert(presses);
 
     let textures = [
         texture_creator.load_texture("assets/bardo.png")?,
     ];
-    // First texture in textures array
     let player_spritesheet = 0;
     let player_top_left_frame = Rect::new(0, 0, 26, 36);
-
-    let player_animation = MovementAnimation {
-        current_frame: 0,
-        up_frames: character_animation_frames(player_spritesheet, player_top_left_frame, Direction::Up),
-        down_frames: character_animation_frames(player_spritesheet, player_top_left_frame, Direction::Down),
-        left_frames: character_animation_frames(player_spritesheet, player_top_left_frame, Direction::Left),
-        right_frames: character_animation_frames(player_spritesheet, player_top_left_frame, Direction::Right),
+    let player = Character{
+        animation: MovementAnimation::new(player_spritesheet, player_top_left_frame),
+        position: Position(Point::new(0, 0)),
+        velocity: Velocity {x: 0, y: 0},
     };
 
     world.create_entity()
         .with(KeyboardControlled)
-        .with(Position(Point::new(0, 0)))
-        .with(Velocity {x: 0, y: 0})
-        .with(player_animation.right_frames[0].clone())
-        .with(player_animation)
+        .with(player.position)
+        .with(player.velocity)
+        .with(player.animation.right_frames[0].clone())
+        .with(player.animation)
         .build();
 
     let mut event_pump = sdl_context.event_pump()?;
