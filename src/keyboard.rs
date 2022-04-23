@@ -4,36 +4,41 @@ use specs::prelude::*;
 
 use crate::components::*;
 
-use super::MovementCommand;
+// use super::MovementCommand;
 
-const PLAYER_MOVEMENT_SPEED: i32 = 20;
+const PLAYER_MOVEMENT_SPEED: i32 = 3;
 
 pub struct Keyboard;
 
 impl<'a> System<'a> for Keyboard {
     type SystemData = (
-        ReadExpect<'a, Option<MovementCommand>>,
+        ReadExpect<'a, KeyTracker>,
         ReadStorage<'a, KeyboardControlled>,
         WriteStorage<'a, Velocity>,
+        WriteStorage<'a, Sprite>
     );
 
     fn run(&mut self, mut data: Self::SystemData) {
-        //TODO: This code can be made nicer and more idiomatic using more pattern matching.
-        // Look up "rust irrefutable patterns" and use them here.
-        let movement_command = match &*data.0 {
-            Some(movement_command) => movement_command,
-            None => return, // no change
-        };
-
-        for (_, vel) in (&data.1, &mut data.2).join() {
-            match movement_command {
-                &MovementCommand::Move(direction) => {
-                    vel.speed = PLAYER_MOVEMENT_SPEED;
-                    vel.direction = direction;
-                },
-                MovementCommand::Stop => vel.speed = 0,
+        let presses = &*data.0;
+        for ( _, vel, sprite) in (&data.1, &mut data.2, &mut data.3).join() {
+            if presses.down {
+                vel.y = PLAYER_MOVEMENT_SPEED;
+                sprite.direction = Direction::Down;
+            } else if presses.up {
+                vel.y = - PLAYER_MOVEMENT_SPEED;
+                sprite.direction = Direction::Up;
+            } else {
+                vel.y = 0;
             }
-        }
+            if presses.left {
+                vel.x = - PLAYER_MOVEMENT_SPEED;
+                sprite.direction = Direction::Left;
+            } else if presses.right {
+                vel.x = PLAYER_MOVEMENT_SPEED;
+                sprite.direction = Direction::Right;
+            } else {
+                vel.x = 0;
+            }
+        }   
     }
 }
-

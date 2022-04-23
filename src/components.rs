@@ -23,8 +23,8 @@ pub struct Position(pub Point);
 #[derive(Component, Debug)]
 #[storage(VecStorage)]
 pub struct Velocity {
-    pub speed: i32,
-    pub direction: Direction,
+    pub x: i32,
+    pub y: i32,
 }
 
 #[derive(Component, Debug, Clone)]
@@ -34,6 +34,7 @@ pub struct Sprite {
     pub spritesheet: usize,
     /// The current region of the spritesheet to be rendered
     pub region: Rect,
+    pub direction: Direction
 }
 
 #[derive(Component, Debug)]
@@ -45,4 +46,23 @@ pub struct MovementAnimation {
     pub down_frames: Vec<Sprite>,
     pub left_frames: Vec<Sprite>,
     pub right_frames: Vec<Sprite>,
+}
+
+#[derive(Component, Debug, Copy, Clone)]
+#[storage(VecStorage)]
+pub struct KeyTracker {
+    pub up: bool,
+    pub down: bool,
+    pub right: bool,
+    pub left: bool
+}
+impl KeyTracker {
+    pub fn new () -> KeyTracker {
+        KeyTracker {
+            up: false,
+            down: false,
+            right: false,
+            left: false
+        }
+    }
 }

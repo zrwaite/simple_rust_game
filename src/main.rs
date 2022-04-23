@@ -52,6 +52,7 @@ fn character_animation_frames(spritesheet: usize, top_left_frame: Rect, directio
                 frame_width,
                 frame_height,
             ),
+            direction: Direction::Down
         })
     }
 
@@ -86,8 +87,10 @@ fn main() -> Result<(), String> {
     renderer::SystemData::setup(&mut world);
 
     // Initialize resource
-    let movement_command: Option<MovementCommand> = None;
-    world.add_resource(movement_command);
+    let mut presses = KeyTracker::new();
+    world.add_resource(presses);
+    // let movement_command: Option<MovementCommand> = None;
+    // world.add_resource(movement_command);
 
     let textures = [
         texture_creator.load_texture("assets/bardo.png")?,
@@ -107,7 +110,7 @@ fn main() -> Result<(), String> {
     world.create_entity()
         .with(KeyboardControlled)
         .with(Position(Point::new(0, 0)))
-        .with(Velocity {speed: 0, direction: Direction::Right})
+        .with(Velocity {x: 0, y: 0})
         .with(player_animation.right_frames[0].clone())
         .with(player_animation)
         .build();
@@ -115,8 +118,6 @@ fn main() -> Result<(), String> {
     let mut event_pump = sdl_context.event_pump()?;
     let mut i = 0;
     'running: loop {
-        // None - no change, Some(MovementCommand) - perform movement
-        let mut movement_command = None;
         // Handle events
         for event in event_pump.poll_iter() {
             match event {
@@ -125,28 +126,34 @@ fn main() -> Result<(), String> {
                     break 'running;
                 },
                 Event::KeyDown { keycode: Some(Keycode::Left), repeat: false, .. } => {
-                    movement_command = Some(MovementCommand::Move(Direction::Left));
+                    presses.left = true;
                 },
                 Event::KeyDown { keycode: Some(Keycode::Right), repeat: false, .. } => {
-                    movement_command = Some(MovementCommand::Move(Direction::Right));
+                    presses.right = true;
                 },
                 Event::KeyDown { keycode: Some(Keycode::Up), repeat: false, .. } => {
-                    movement_command = Some(MovementCommand::Move(Direction::Up));
+                    presses.up = true;
                 },
                 Event::KeyDown { keycode: Some(Keycode::Down), repeat: false, .. } => {
-                    movement_command = Some(MovementCommand::Move(Direction::Down));
+                    presses.down = true;
                 },
-                Event::KeyUp { keycode: Some(Keycode::Left), repeat: false, .. } |
-                Event::KeyUp { keycode: Some(Keycode::Right), repeat: false, .. } |
-                Event::KeyUp { keycode: Some(Keycode::Up), repeat: false, .. } |
+                Event::KeyUp { keycode: Some(Keycode::Left), repeat: false, .. } => {
+                    presses.left = false;
+                }   
+                Event::KeyUp { keycode: Some(Keycode::Right), repeat: false, .. } => {
+                    presses.right = false;
+                }   
+                Event::KeyUp { keycode: Some(Keycode::Up), repeat: false, .. } => {
+                    presses.up = false;
+                }   
                 Event::KeyUp { keycode: Some(Keycode::Down), repeat: false, .. } => {
-                    movement_command = Some(MovementCommand::Stop);
+                    presses.down = false;
                 },
                 _ => {}
             }
         }
 
-        *world.write_resource() = movement_command;
+        *world.write_resource() = presses;
 
         // Update
         i = (i + 1) % 255;
@@ -157,7 +164,7 @@ fn main() -> Result<(), String> {
         renderer::render(&mut canvas, Color::RGB(i, 64, 255 - i), &textures, world.system_data())?;
 
         // Time management!
-        ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 20));
+        ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
     }
 
     Ok(())

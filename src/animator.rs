@@ -15,14 +15,12 @@ impl<'a> System<'a> for Animator {
 
     fn run(&mut self, mut data: Self::SystemData) {
         use self::Direction::*;
-        //TODO: This code can be made nicer and more idiomatic using more pattern matching.
-        // Look up "rust irrefutable patterns" and use them here.
         for (anim, sprite, vel) in (&mut data.0, &mut data.1, &data.2).join() {
-            if vel.speed == 0 {
+            if vel.x == 0 && vel.y ==0 {
                 continue;
             }
 
-            let frames = match vel.direction {
+            let frames = match sprite.direction {
                 Left => &anim.left_frames,
                 Right => &anim.right_frames,
                 Up => &anim.up_frames,
