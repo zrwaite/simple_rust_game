@@ -1,11 +1,11 @@
-use specs::prelude::*;
+use specs::prelude::{ReadStorage};
+use specs::Join;
 use sdl2::rect::{Point, Rect};
 use sdl2::pixels::Color;
 use sdl2::render::{WindowCanvas, Texture};
 
-use crate::components::*;
+use crate::components::{Position, Sprite};
 
-// Type alias for the data needed by the renderer
 pub type SystemData<'a> = (
     ReadStorage<'a, Position>,
     ReadStorage<'a, Sprite>,

@@ -9,14 +9,14 @@ use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::pixels::Color;
 use sdl2::rect::{Point, Rect};
-// "self" imports the "image" module itself as well as everything else we listed
 use sdl2::image::{self, LoadTexture, InitFlag};
 
-use specs::prelude::*;
+use specs::{WorldExt, Builder, SystemData};
+use specs::prelude::{DispatcherBuilder, World};
 
 use std::time::Duration;
 
-use crate::components::*;
+use crate::components::{Position, Velocity, KeyboardControlled, KeyTracker, MovementAnimation};
 use crate::character::Character;
 
 fn main() -> Result<(), String> {
